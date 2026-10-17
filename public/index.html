@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PlantDoc AI — Plant Health Diagnosis</title>
+  <meta name="description" content="Take a photo of a sick plant and get a likely diagnosis, a confidence level, and low-cost steps you can take today — in your own language.">
+  <meta name="theme-color" content="#0a0a0a">
+
+  <!-- Fonts: Geist (display) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <!-- ─── NAVBAR ─── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <i class="ph ph-plant"></i>
+        <span>PlantDoc AI</span>
+      </a>
+      <div class="nav-actions">
+        <div class="language-selector" id="languageSelector">
+          <button class="lang-btn active" data-lang="English">EN</button>
+          <button class="lang-btn" data-lang="Roman Urdu">RU</button>
+          <button class="lang-btn" data-lang="اردو">اردو</button>
+        </div>
+        <a href="#history-section" class="nav-link">
+          <i class="ph ph-clock-counter-clockwise"></i>
+          <span data-i18n="history">History</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ─── HERO ─── -->
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-content">
+        <div class="hero-badge reveal">
+          <i class="ph ph-sparkle"></i>
+          <span data-i18n="hero_badge">Powered by Gemma 4 AI</span>
+        </div>
+        <h1 class="hero-title reveal reveal-delay-1">
+          <span data-i18n="hero_title_1">Your plant is trying to</span>
+          <br>
+          <span class="hero-accent" data-i18n="hero_title_2">tell you something.</span>
+        </h1>
+        <p class="hero-subtitle reveal reveal-delay-2" data-i18n="hero_subtitle">
+          Take a photo of a sick plant and get a likely diagnosis, a confidence level, and low-cost steps you can take today.
+        </p>
+        <a href="#diagnose" class="hero-cta reveal reveal-delay-3">
+          <span data-i18n="hero_cta">Start Diagnosis</span>
+          <i class="ph-bold ph-arrow-down"></i>
+        </a>
+      </div>
+      <div class="hero-visual reveal reveal-delay-2">
+        <div class="hero-card-stack">
+          <div class="hero-float-card card-1">
+            <i class="ph-fill ph-leaf"></i>
+            <span data-i18n="hero_card_1">Disease Detection</span>
+          </div>
+          <div class="hero-float-card card-2">
+            <i class="ph-fill ph-bug"></i>
+            <span data-i18n="hero_card_2">Pest Identification</span>
+          </div>
+          <div class="hero-float-card card-3">
+            <i class="ph-fill ph-drop-half-bottom"></i>
+            <span data-i18n="hero_card_3">Nutrient Analysis</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── DIAGNOSE SECTION ─── -->
+    <section class="diagnose-section" id="diagnose">
+      <div class="section-header reveal">
+        <h2 data-i18n="diagnose_title">Upload Your Plant Photo</h2>
+        <p data-i18n="diagnose_subtitle">Our AI will analyze it and provide a detailed health assessment.</p>
+      </div>
+
+      <div class="diagnose-grid">
+        <!-- Upload Zone -->
+        <div class="upload-zone reveal" id="uploadZone">
+          <div class="upload-area" id="uploadArea">
+            <input type="file" id="imageInput" accept="image/*" capture="environment" hidden>
+            <div class="upload-placeholder" id="uploadPlaceholder">
+              <div class="upload-icon-ring">
+                <i class="ph ph-camera"></i>
+              </div>
+              <p class="upload-text" data-i18n="upload_text">Drag a photo here or click to upload</p>
+              <p class="upload-hint" data-i18n="upload_hint">JPEG, PNG, or WebP — max 10MB</p>
+              <div class="upload-actions">
+                <button class="btn btn-outline" id="btnUpload">
+                  <i class="ph ph-upload-simple"></i>
+                  <span data-i18n="btn_upload">Choose File</span>
+                </button>
+                <button class="btn btn-outline" id="btnCamera">
+                  <i class="ph ph-camera"></i>
+                  <span data-i18n="btn_camera">Take Photo</span>
+                </button>
+              </div>
+            </div>
+            <div class="upload-preview" id="uploadPreview" hidden>
+              <img id="previewImage" alt="Uploaded plant photo">
+              <button class="preview-remove" id="btnRemoveImage" aria-label="Remove image">
+                <i class="ph-bold ph-x"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Context Form -->
+        <div class="context-form reveal reveal-delay-1" id="contextForm">
+          <h3 data-i18n="context_title">Optional Details</h3>
+          <p class="context-hint" data-i18n="context_hint">Help the AI give a better diagnosis.</p>
+
+          <div class="form-group">
+            <label for="plantType" data-i18n="label_plant_type">Plant type (if known)</label>
+            <input type="text" id="plantType" placeholder="e.g. Tomato, Rose, Wheat..." data-i18n-placeholder="placeholder_plant_type">
+          </div>
+          <div class="form-group">
+            <label for="location" data-i18n="label_location">Location / Climate</label>
+            <input type="text" id="location" placeholder="e.g. Punjab, humid, summer..." data-i18n-placeholder="placeholder_location">
+          </div>
+          <div class="form-group">
+            <label for="symptoms" data-i18n="label_symptoms">Describe what you see</label>
+            <textarea id="symptoms" rows="3" placeholder="e.g. Yellow spots on leaves, curling edges..." data-i18n-placeholder="placeholder_symptoms"></textarea>
+          </div>
+
+          <button class="btn btn-primary btn-diagnose" id="btnDiagnose" disabled>
+            <i class="ph-bold ph-magnifying-glass"></i>
+            <span data-i18n="btn_diagnose">Analyze Plant</span>
+            <div class="btn-loader" hidden id="btnLoader">
+              <div class="spinner"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── RESULTS SECTION ─── -->
+    <section class="results-section" id="results-section" hidden>
+      <div class="section-header">
+        <h2 data-i18n="results_title">Diagnosis Results</h2>
+      </div>
+
+      <!-- Skeleton Loader -->
+      <div class="results-skeleton" id="resultsSkeleton" hidden>
+        <div class="skeleton-card">
+          <div class="skeleton-row skeleton-wide"></div>
+          <div class="skeleton-row skeleton-medium"></div>
+          <div class="skeleton-row skeleton-narrow"></div>
+          <div class="skeleton-row skeleton-wide"></div>
+          <div class="skeleton-row skeleton-medium"></div>
+        </div>
+      </div>
+
+      <!-- Actual Results -->
+      <div class="results-content" id="resultsContent" hidden>
+
+        <!-- Plant ID Card -->
+        <div class="result-card plant-id-card" id="plantIdCard">
+          <div class="result-card-inner">
+            <div class="plant-id-photo">
+              <img id="resultPhoto" alt="Analyzed plant">
+            </div>
+            <div class="plant-id-info">
+              <div class="plant-id-label" data-i18n="plant_identified">Plant Identified</div>
+              <div class="plant-id-name" id="plantName">—</div>
+              <div class="confidence-badge" id="plantConfidence">
+                <span class="confidence-dots"></span>
+                <span class="confidence-label"></span>
+              </div>
+              <div class="health-status" id="healthStatus"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Likely Issues -->
+        <div class="result-card issues-card" id="issuesCard">
+          <h3 class="result-card-title">
+            <i class="ph ph-warning-circle"></i>
+            <span data-i18n="likely_issues">Likely Issues</span>
+          </h3>
+          <div class="issues-list" id="issuesList"></div>
+        </div>
+
+        <!-- What I Can't Tell -->
+        <div class="result-card limitations-card" id="limitationsCard">
+          <h3 class="result-card-title">
+            <i class="ph ph-eye-slash"></i>
+            <span data-i18n="what_cant_tell">What I Can't Tell</span>
+          </h3>
+          <p class="limitations-text" id="limitationsText"></p>
+        </div>
+
+        <!-- Follow-up Questions -->
+        <div class="result-card questions-card" id="questionsCard">
+          <h3 class="result-card-title">
+            <i class="ph ph-chat-circle-dots"></i>
+            <span data-i18n="follow_up_questions">Follow-up Questions</span>
+          </h3>
+          <div class="questions-list" id="questionsList"></div>
+        </div>
+
+        <!-- Treatment Steps -->
+        <div class="result-card treatment-card" id="treatmentCard">
+          <h3 class="result-card-title">
+            <i class="ph ph-first-aid-kit"></i>
+            <span data-i18n="treatment_steps">Treatment Steps</span>
+          </h3>
+          <div class="treatment-list" id="treatmentList"></div>
+        </div>
+
+        <!-- When to Get Help -->
+        <div class="result-card help-card" id="helpCard">
+          <h3 class="result-card-title">
+            <i class="ph ph-hospital"></i>
+            <span data-i18n="when_to_get_help">When to Get Help</span>
+          </h3>
+          <p class="help-text" id="helpText"></p>
+        </div>
+
+        <!-- Safety Note -->
+        <div class="result-card safety-card" id="safetyCard">
+          <div class="safety-inner">
+            <i class="ph-fill ph-shield-warning"></i>
+            <p class="safety-text" id="safetyText"></p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ─── CHAT SECTION ─── -->
+    <section class="chat-section" id="chat-section" hidden>
+      <div class="section-header">
+        <h2 data-i18n="chat_title">Follow-up Chat</h2>
+        <p data-i18n="chat_subtitle">Ask more questions — the AI remembers your photo and diagnosis.</p>
+      </div>
+
+      <div class="chat-container" id="chatContainer">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-bar">
+          <input type="text" id="chatInput" placeholder="Ask a follow-up question..." data-i18n-placeholder="chat_placeholder">
+          <button class="btn btn-primary btn-send" id="btnSendChat" disabled>
+            <i class="ph-bold ph-paper-plane-tilt"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─── HISTORY SECTION ─── -->
+    <section class="history-section" id="history-section">
+      <div class="section-header reveal">
+        <h2 data-i18n="history_title">Diagnosis History</h2>
+        <p data-i18n="history_subtitle">Your past plant diagnoses, saved locally in your browser.</p>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty" id="historyEmpty">
+          <i class="ph ph-potted-plant"></i>
+          <p data-i18n="history_empty">No diagnoses yet. Upload a plant photo to get started!</p>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-clear-history" id="btnClearHistory" hidden>
+        <i class="ph ph-trash"></i>
+        <span data-i18n="clear_history">Clear History</span>
+      </button>
+    </section>
+
+  </main>
+
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <i class="ph ph-plant"></i>
+        <span>PlantDoc AI</span>
+      </div>
+      <p class="footer-disclaimer" data-i18n="footer_disclaimer">
+        This tool provides AI-based estimates only. Always confirm diagnoses with your local agricultural extension office before using any treatments or pesticides.
+      </p>
+      <p class="footer-credit">
+        Built with <i class="ph-fill ph-heart"></i> using Gemma 4 &bull; Hacktober 2026
+      </p>
+    </div>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
