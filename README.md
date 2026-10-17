@@ -1,24 +1,39 @@
 # 🌿 PlantDoc AI
 
-**AI-powered plant health diagnosis for farmers and home gardeners.**
+> Snap a photo of your plant. Get a diagnosis, confidence levels, and practical treatment steps — in your own language.
 
-Take a photo of a sick plant and get a likely diagnosis, confidence levels, and low-cost treatment steps you can take today — in English, Roman Urdu, or Urdu script.
+**[🚀 Try the Live App →](https://plantdoc-ai-five.vercel.app/)**
 
-![PlantDoc AI](https://img.shields.io/badge/Powered%20by-Gemma%204%20AI-10b981?style=for-the-badge&logo=google&logoColor=white)
+![PlantDoc AI Screenshot](public/screenshot.png)
+
+![Powered by Gemma 4 AI](https://img.shields.io/badge/Powered%20by-Gemma%204%20AI-10b981?style=for-the-badge&logo=google&logoColor=white)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Hacktober](https://img.shields.io/badge/Hacktober-2026-ff6600?style=for-the-badge)
 
 ---
 
-## What Makes This Different
+## The Pitch
 
-PlantDoc AI is not a generic image classifier. It behaves like a plant doctor:
+Most AI plant tools are glorified image classifiers: one label, no context, no next steps. **PlantDoc AI is different.** It works like a real plant doctor:
 
-- **Honest confidence levels** — gives top 2–3 likely causes ranked by probability, and tells you what it *can't* determine from a single photo
-- **Follow-up questions** — asks things the photo can't answer ("Is it on old or new leaves? How often do you water?") and lets you refine the diagnosis through conversation
-- **Low-cost, practical treatments** — home remedies and cheap options first, with urgency labels (immediate / this week / when possible)
-- **Trilingual support** — English, Roman Urdu (اردو in English letters), and Urdu script (اردو) for Pakistani and South Asian farmers
-- **Privacy-first architecture** — your API key stays on the server, never exposed to the browser
+1. **It's honest.** Gives you a ranked differential diagnosis with confidence levels — not a single guess. When it's unsure, it says so.
+2. **It asks follow-up questions.** A photo can't show watering habits or soil pH. PlantDoc asks what it needs to know, and lets you refine the diagnosis through conversation.
+3. **It gives you actionable treatment steps right now.** Free and low-cost remedies first — remove affected leaves, adjust watering, apply mulch — with urgency labels so you know what to do *today* vs. *this week*.
+4. **It speaks your language.** English, Roman Urdu (اردو in English letters), and full Urdu script (اردو) for Pakistani and South Asian farmers who may not have English literacy but do have a smartphone.
+5. **Your API key never touches the browser.** Everything is proxied through a secure backend with rate limiting, CSP headers, and CORS — not a client-side demo that leaks your key in DevTools.
+
+Built for Hacktober 2026. Deployed at **[plantdoc-ai-five.vercel.app](https://plantdoc-ai-five.vercel.app/)**.
+
+---
+
+## AI Model
+
+| | |
+|---|---|
+| **Model** | [Google Gemma 4](https://ai.google.dev/) (`gemma-4-26b-a4b-it`) |
+| **API** | Google Gemini API (v1beta `generateContent`) |
+| **Why Gemma 4?** | Open-weight, strong vision capabilities, free-tier API access via AI Studio. Unlike larger models, Gemma 4 consistently refuses to output raw JSON for image analysis — so PlantDoc includes a server-side prose parser that extracts structured diagnosis data from the model's natural bullet-point output. This turns out to be *more* reliable than forcing JSON output. |
 
 ---
 
@@ -34,6 +49,7 @@ PlantDoc AI is not a generic image classifier. It behaves like a plant doctor:
 | 📋 **Case History** | Local history of past diagnoses stored in your browser |
 | 🛡️ **Security Hardened** | Helmet CSP headers, rate limiting, API key proxying |
 | 🖼️ **Test Images** | 5 bundled test images (early blight, aphids, powdery mildew, overwatering, healthy plant) |
+| 🤖 **Agent Skill** | Reusable `plant-doctor` Agent Skill following the [Agent Skills](https://agentskills.io) spec |
 
 ---
 
@@ -43,6 +59,7 @@ PlantDoc AI is not a generic image classifier. It behaves like a plant doctor:
 - **Backend**: Node.js + Express 5
 - **AI Model**: Google Gemma 4 (`gemma-4-26b-a4b-it`) via Gemini API
 - **Security**: Helmet, express-rate-limit, CORS
+- **Deployment**: Vercel (serverless functions)
 - **Icons**: Phosphor Icons
 - **Fonts**: Inter (Google Fonts)
 
@@ -75,6 +92,23 @@ npm start
 
 Then open **http://localhost:3000** in your browser.
 
+### Deploy to Vercel
+
+The project is pre-configured for Vercel deployment:
+
+```bash
+# Deploy via CLI
+npx vercel
+
+# Add your API key
+npx vercel env add GEMINI_API_KEY production
+
+# Deploy to production
+npx vercel --prod
+```
+
+Or connect via GitHub: import the repo at [vercel.com/new](https://vercel.com/new) and add `GEMINI_API_KEY` in the environment variables section.
+
 ### Environment Variables
 
 | Variable | Description | Required |
@@ -89,22 +123,83 @@ Then open **http://localhost:3000** in your browser.
 
 ```
 plantdoc-ai/
-├── server.js              # Express backend with API proxying + prose parser
-├── package.json           # Dependencies and scripts
-├── .env                   # API key (git-ignored)
+├── server.js                # Express backend with API proxying + prose parser
+├── api/
+│   └── index.js             # Vercel serverless function entry point
+├── vercel.json              # Vercel deployment configuration
+├── package.json             # Dependencies and scripts
+├── .env                     # API key (git-ignored)
 ├── .gitignore
 ├── README.md
+├── LICENSE
+├── .agents/
+│   └── skills/
+│       └── plant-doctor/    # Agent Skill (see below)
+│           ├── SKILL.md
+│           └── references/
+│               ├── common-issues.md
+│               └── diagnosis-schema.md
 └── public/
-    ├── index.html         # Semantic HTML5 with trilingual support
-    ├── styles.css         # Dark emerald design system
-    ├── app.js             # Frontend logic, i18n, compression, chat
-    └── test-images/       # 5 bundled test images
+    ├── index.html           # Semantic HTML5 with trilingual support
+    ├── styles.css           # Dark emerald design system
+    ├── app.js               # Frontend logic, i18n, compression, chat
+    ├── screenshot.png       # App screenshot
+    └── test-images/         # 5 bundled test images
         ├── early-blight.jpg
         ├── aphids.jpg
         ├── powdery-mildew.jpg
         ├── overwatering.jpg
         └── healthy-plant.jpg
 ```
+
+---
+
+## 🤖 Agent Skill: `plant-doctor`
+
+PlantDoc AI's diagnosis logic is packaged as a reusable **[Agent Skill](https://agentskills.io)** — a standardized format that lets any compatible AI agent (VS Code Copilot, Claude Code, OpenAI Codex, etc.) use the same plant diagnosis protocol.
+
+### What's in the skill
+
+```
+.agents/skills/plant-doctor/
+├── SKILL.md                        # Diagnosis protocol, output schema, safety rules
+└── references/
+    ├── common-issues.md            # Visual signature lookup table (diseases, pests, deficiencies)
+    └── diagnosis-schema.md         # JSON Schema for validating diagnosis output
+```
+
+### How it works
+
+The skill follows the Agent Skills spec's **progressive disclosure** model:
+
+1. **Discovery** — The agent reads the `name` and `description` from YAML frontmatter (~100 tokens) to decide when to activate.
+2. **Activation** — When a user asks about plant health, the agent loads the full `SKILL.md` body containing the 6-step diagnosis protocol, output JSON schema, safety rules, and multilingual support instructions.
+3. **On-demand references** — The `references/` directory contains detailed lookup tables and the JSON Schema, loaded only when the agent needs them.
+
+### Spec compliance
+
+The skill follows every requirement from [agentskills.io/specification](https://agentskills.io/specification):
+
+- ✅ `name` field: lowercase, matches directory name, no consecutive hyphens
+- ✅ `description` field: describes what and when, includes activation keywords
+- ✅ `license` field: MIT
+- ✅ `metadata` field: author and version
+- ✅ YAML frontmatter + Markdown body format
+- ✅ Progressive disclosure: main instructions in SKILL.md, detailed references in separate files
+- ✅ File references use relative paths from skill root
+- ✅ SKILL.md under 500 lines
+
+### Using the skill
+
+Drop the `plant-doctor/` folder into your agent's skill directory:
+
+| Agent | Skill directory |
+|---|---|
+| VS Code (Copilot) | `.agents/skills/` |
+| Claude Code | `.claude/skills/` or `~/.claude/skills/` |
+| Antigravity | `.agents/skills/` or `~/.gemini/config/skills/` |
+
+Then ask your agent: *"What's wrong with this plant?"* + attach a photo.
 
 ---
 
@@ -117,10 +212,10 @@ plantdoc-ai/
 │   (public/)  │                            │   Server     │                         │  (Gemini API)│
 │              │  ◄───────────────────────   │              │  ◄──────────────────    │              │
 └──────────────┘     { diagnosis }           └──────────────┘     prose analysis      └──────────────┘
-                                                   │
-                                          Server-side prose
-                                          parser extracts
-                                          structured JSON
+                                                    │
+                                           Server-side prose
+                                           parser extracts
+                                           structured JSON
 ```
 
 **Key architectural decision**: The API key never reaches the browser. All AI calls are proxied through the Express backend.
@@ -256,8 +351,10 @@ This project is open source under the [MIT License](LICENSE).
 ## Acknowledgments
 
 - [Google Gemma 4](https://ai.google.dev/) — open-weight AI model powering the diagnosis
+- [Agent Skills](https://agentskills.io) — open standard for reusable AI agent skills
 - [Phosphor Icons](https://phosphoricons.com/) — beautiful icon set
 - [Inter Font](https://rsms.me/inter/) — clean, readable typeface
+- [Vercel](https://vercel.com) — serverless deployment platform
 - Built for **Hacktober 2026** 🎃
 
 ---
