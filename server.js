@@ -12,6 +12,8 @@ const PORT = process.env.PORT || 3000;
    1. SECURITY MIDDLEWARE
    ───────────────────────────────────────────── */
 
+app.set('trust proxy', 1);
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -27,9 +29,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? false
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: true,
   methods: ['GET', 'POST'],
   maxAge: 86400,
 }));
@@ -53,13 +53,15 @@ app.use(express.static(path.join(__dirname, 'public')));
    2. GEMINI API CONFIG
    ───────────────────────────────────────────── */
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = 'gemma-4-26b-a4b-it';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`;
 
-if (!GEMINI_API_KEY) {
-  console.error('❌ GEMINI_API_KEY not found in .env file');
-  process.exit(1);
+function getGeminiUrl() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  return `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+}
+
+if (!process.env.GEMINI_API_KEY) {
+  console.warn('⚠️  GEMINI_API_KEY not found in environment variables. Set it in .env locally or in Vercel project settings.');
 }
 
 
@@ -352,8 +354,12 @@ Rules:
  * Body: { image: base64, mimeType: string, context?: string, language?: string }
  * Returns: { diagnosis: Object } or { rawText: string } on parse failure
  */
-app.post('/api/diagnose', apiLimiter, async (req, res) => {
+app.post(['/api/diagnose', '/diagnose'], apiLimiter, async (req, res) => {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server. Please add it to your environment variables in Vercel.' });
+    }
+
     const { image, mimeType, context, language } = req.body;
 
     if (!image || !mimeType) {
@@ -393,7 +399,7 @@ Analyze the plant photo and describe:
 7. When should they seek expert help?
 Be honest — if the plant looks healthy, say so. Do not invent problems.`;
 
-    const step1Res = await fetch(GEMINI_URL, {
+    const step1Res = await fetch(getGeminiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -457,8 +463,12 @@ Be honest — if the plant looks healthy, say so. Do not invent problems.`;
  * Body: { contents: Array (full Gemini conversation history) }
  * Returns: Gemini API response passthrough
  */
-app.post('/api/chat', apiLimiter, async (req, res) => {
+app.post(['/api/chat', '/chat'], apiLimiter, async (req, res) => {
   try {
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server. Please add it to your environment variables in Vercel.' });
+    }
+
     const { contents } = req.body;
 
     if (!contents || !Array.isArray(contents) || contents.length === 0) {
@@ -474,7 +484,7 @@ app.post('/api/chat', apiLimiter, async (req, res) => {
       generationConfig: { temperature: 0.4, topP: 0.95, topK: 40, maxOutputTokens: 2048 },
     };
 
-    const geminiRes = await fetch(GEMINI_URL, {
+    const geminiRes = await fetch(getGeminiUrl(), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -503,13 +513,17 @@ app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.listen(PORT, () => {
-  console.log(`
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`
   🌿 PlantDoc AI
   ──────────────────────────────
   Local:   http://localhost:${PORT}
   Model:   ${GEMINI_MODEL}
   Env:     ${process.env.NODE_ENV || 'development'}
   ──────────────────────────────
-  `);
-});
+    `);
+  });
+}
+
+module.exports = app;
